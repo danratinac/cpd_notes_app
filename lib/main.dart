@@ -13,18 +13,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF612940),
+        ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: DefaultTabController(
+        length: 7,
+        child: const MyHomePage(title: 'Flutter Demo Home Page'),
+      ),
     );
   }
 }
@@ -70,11 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
@@ -107,9 +98,59 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        tooltip: 'Add Note',
+        child: const Icon(Icons.note_add_outlined),
+      ),
+      bottomNavigationBar: const _LabelsAppBar(),
+    );
+  }
+}
+
+class _LabelsAppBar extends StatelessWidget {
+  const _LabelsAppBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return ColoredBox(
+      color: theme.colorScheme.primary,
+      child: TabBar(
+        isScrollable: true,
+        indicatorColor: theme.colorScheme.onPrimary,
+        labelColor: theme.colorScheme.onPrimary,
+        unselectedLabelColor: theme.colorScheme.inversePrimary,
+        tabs: const [
+          Tab(
+            icon: Icon(Icons.label_off_outlined),
+            text: "Unlabeled",
+          ),
+          Tab(
+            icon: Icon(Icons.checklist_outlined),
+            text: "Todo",
+          ),
+          Tab(
+            icon: Icon(Icons.work_outline),
+            text: "Work",
+          ),
+          Tab(
+            icon: Icon(Icons.school_outlined),
+            text: "School",
+          ),
+          Tab(
+            icon: Icon(Icons.chat_bubble_outline),
+            text: "Quotes",
+          ),
+          Tab(
+            icon: Icon(Icons.report_outlined),
+            text: "Important",
+          ),
+          Tab(
+            icon: Icon(Icons.airplanemode_active_outlined),
+            text: "Travel",
+          ),
+        ],
+      ),
     );
   }
 }
