@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 void main() {
   runApp(const MyApp());
@@ -66,6 +67,7 @@ class AppState extends ChangeNotifier {
 
   void addNote(title, text) {
     if (title == '' || text == '') {
+      Fluttertoast.showToast(msg: 'Empty note discarded');
       return;
     }
     notes.elementAt(currentLabel).add(NoteData(title, text));
@@ -129,6 +131,7 @@ class HomeScreen extends StatelessWidget {
         bottomNavigationBar: const LabelsAppBar(),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
+            appState.changeCurrentLabel(0);
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const NewNoteScreen()),
@@ -273,7 +276,10 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
     titleController.text = widget.title;
     noteController.text = widget.text;
 
+    appState.changeCurrentLabel(widget.noteIndex[0]);
+
     return DefaultTabController(
+      initialIndex: widget.noteIndex[0],
       length: 7,
       child: Scaffold(
         body: SafeArea(
@@ -290,10 +296,21 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () {
-                        //showDialog(context: context, builder: (BuildContext context) => )
-                        appState.removeNote(widget.noteIndex);
-                        Navigator.pop(context);
+                      onPressed: () async {
+                        bool? confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                const DeleteAlert());
+                        if (confirm == null) {
+                          return;
+                        }
+                        if (confirm) {
+                          if (!mounted) {
+                            return;
+                          }
+                          appState.removeNote(widget.noteIndex);
+                          Navigator.pop(context);
+                        }
                       },
                       icon: const Icon(Icons.delete_outline),
                       iconSize: 30.0,
@@ -582,6 +599,32 @@ class NoteDisplay extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class DeleteAlert extends StatelessWidget {
+  const DeleteAlert({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Confirmation Required'),
+      content: const Text('Are you sure you want to delete this note?'),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context, false);
+          },
+          child: const Text('No'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context, true);
+          },
+          child: const Text('Yes'),
+        ),
+      ],
     );
   }
 }
