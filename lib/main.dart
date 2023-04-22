@@ -65,7 +65,29 @@ class AppState extends ChangeNotifier {
   ];
 
   void addNote(title, text) {
+    if (title == '' || text == '') {
+      return;
+    }
     notes.elementAt(currentLabel).add(NoteData(title, text));
+    notifyListeners();
+  }
+
+  void updateNote(index, title, text) {
+    if (title == '' || text == '') {
+      return;
+    }
+    if (title == notes.elementAt(index[0]).elementAt(index[1]).title &&
+        text == notes.elementAt(index[0]).elementAt(index[1]).text &&
+        index[0] == currentLabel) {
+      return;
+    }
+    notes.elementAt(index[0]).removeAt(index[1]);
+    notes.elementAt(currentLabel).add(NoteData(title, text));
+    notifyListeners();
+  }
+
+  void removeNote(index) {
+    notes.elementAt(index[0]).removeAt(index[1]);
     notifyListeners();
   }
 }
@@ -169,7 +191,8 @@ class _NewNoteScreenState extends State<NewNoteScreen> {
                         Navigator.pop(context);
                       },
                       icon: const Icon(Icons.close),
-                      iconSize: 40.0,
+                      iconSize: 30.0,
+                      color: theme.colorScheme.primary,
                       tooltip: 'Cancel',
                     ),
                   ],
@@ -198,6 +221,121 @@ class _NewNoteScreenState extends State<NewNoteScreen> {
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             appState.addNote(titleController.text, noteController.text);
+            Navigator.pop(context);
+          },
+          tooltip: 'Confirm',
+          child: const Icon(Icons.check),
+        ),
+        bottomNavigationBar:
+            const LabelsAppBarWithTitle(title: 'Select note label:'),
+      ),
+    );
+  }
+}
+
+class EditNoteScreen extends StatefulWidget {
+  const EditNoteScreen({
+    super.key,
+    required this.noteIndex,
+    required this.title,
+    required this.text,
+  });
+
+  final List<int> noteIndex;
+  final String title;
+  final String text;
+
+  @override
+  State<EditNoteScreen> createState() => _EditNoteScreenState();
+}
+
+class _EditNoteScreenState extends State<EditNoteScreen> {
+  final titleController = TextEditingController();
+  final noteController = TextEditingController();
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final titleTheme = theme.textTheme.titleLarge!.copyWith(
+      color: theme.colorScheme.primary,
+      fontSize: 35,
+    );
+
+    var appState = context.watch<AppState>();
+
+    titleController.text = widget.title;
+    noteController.text = widget.text;
+
+    return DefaultTabController(
+      length: 7,
+      child: Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Edit Note',
+                        style: titleTheme,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        //showDialog(context: context, builder: (BuildContext context) => )
+                        appState.removeNote(widget.noteIndex);
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(Icons.delete_outline),
+                      iconSize: 30.0,
+                      color: theme.colorScheme.primary,
+                      tooltip: 'Delete Note',
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(Icons.close),
+                      iconSize: 30.0,
+                      color: theme.colorScheme.primary,
+                      tooltip: 'Cancel',
+                    ),
+                  ],
+                ),
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    label: Text('Note title...'),
+                  ),
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: noteController,
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
+                    decoration: const InputDecoration(
+                      label: Text('Take a note...'),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            appState.updateNote(
+                widget.noteIndex, titleController.text, noteController.text);
             Navigator.pop(context);
           },
           tooltip: 'Confirm',
@@ -393,34 +531,54 @@ class NoteDisplay extends StatelessWidget {
 
     var appState = context.watch<AppState>();
 
-    return Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Card(
-        color: theme.colorScheme.primaryContainer,
-        shadowColor: theme.colorScheme.primary,
-        elevation: 5.0,
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 5.0),
-                child: Text(
-                  appState.notes[noteDataIndex[0]][noteDataIndex[1]].title,
-                  style: titleTheme,
-                  overflow: TextOverflow.ellipsis,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => EditNoteScreen(
+                    noteIndex: noteDataIndex,
+                    title: appState.notes
+                        .elementAt(noteDataIndex[0])
+                        .elementAt(noteDataIndex[1])
+                        .title,
+                    text: appState.notes
+                        .elementAt(noteDataIndex[0])
+                        .elementAt(noteDataIndex[1])
+                        .text,
+                  )),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(5.0),
+        child: Card(
+          color: theme.colorScheme.primaryContainer,
+          shadowColor: theme.colorScheme.primary,
+          elevation: 5.0,
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 5.0),
+                  child: Text(
+                    appState.notes[noteDataIndex[0]][noteDataIndex[1]].title,
+                    style: titleTheme,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 4,
+                  ),
                 ),
-              ),
-              Expanded(
-                child: Text(
-                  appState.notes[noteDataIndex[0]][noteDataIndex[1]].text,
-                  style: textTheme,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 8,
-                ),
-              )
-            ],
+                Expanded(
+                  child: Text(
+                    appState.notes[noteDataIndex[0]][noteDataIndex[1]].text,
+                    style: textTheme,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 5,
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),
