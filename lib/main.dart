@@ -128,7 +128,12 @@ class HomeScreen extends StatelessWidget {
                 .toList(),
           ),
         ),
-        bottomNavigationBar: const LabelsAppBar(),
+        bottomNavigationBar: ColoredBox(
+          color: theme.colorScheme.primary,
+          child: const SafeArea(
+            child: LabelsAppBar(),
+          ),
+        ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             appState.changeCurrentLabel(0);
@@ -137,6 +142,7 @@ class HomeScreen extends StatelessWidget {
               MaterialPageRoute(builder: (context) => const NewNoteScreen()),
             );
           },
+          backgroundColor: theme.colorScheme.primary,
           tooltip: 'Add Note',
           child: const Icon(Icons.note_add_outlined),
         ),
@@ -226,11 +232,16 @@ class _NewNoteScreenState extends State<NewNoteScreen> {
             appState.addNote(titleController.text, noteController.text);
             Navigator.pop(context);
           },
+          backgroundColor: theme.colorScheme.primary,
           tooltip: 'Confirm',
           child: const Icon(Icons.check),
         ),
-        bottomNavigationBar:
-            const LabelsAppBarWithTitle(title: 'Select note label:'),
+        bottomNavigationBar: ColoredBox(
+          color: theme.colorScheme.primary,
+          child: const SafeArea(
+            child: LabelsAppBarWithTitle(title: 'Select note label:'),
+          ),
+        ),
       ),
     );
   }
@@ -355,11 +366,16 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                 widget.noteIndex, titleController.text, noteController.text);
             Navigator.pop(context);
           },
+          backgroundColor: theme.colorScheme.primary,
           tooltip: 'Confirm',
           child: const Icon(Icons.check),
         ),
-        bottomNavigationBar:
-            const LabelsAppBarWithTitle(title: 'Select note label:'),
+        bottomNavigationBar: ColoredBox(
+          color: theme.colorScheme.primary,
+          child: const SafeArea(
+            child: LabelsAppBarWithTitle(title: 'Select note label:'),
+          ),
+        ),
       ),
     );
   }
@@ -385,7 +401,7 @@ class LabelPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.all(10.0),
+          padding: const EdgeInsets.only(top: 10.0, left: 10.0, right: 10.0),
           child: Text(
             '$title Notes',
             style: titleTheme,
@@ -590,8 +606,7 @@ class NoteDisplay extends StatelessWidget {
                   child: Text(
                     appState.notes[noteDataIndex[0]][noteDataIndex[1]].text,
                     style: textTheme,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 5,
+                    overflow: TextOverflow.fade,
                   ),
                 )
               ],
